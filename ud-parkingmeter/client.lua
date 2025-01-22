@@ -1,5 +1,6 @@
 local model = 'prop_parknmeter_02'
-local displaytime = 900000 -- 15 mins
+local displaytime = 900000 -- 15mins
+local paidMeters = {}
 
 Citizen.CreateThread(function()
     exports["qb-target"]:AddTargetModel(model, { 
@@ -15,7 +16,17 @@ Citizen.CreateThread(function()
     })
 
     while true do
-        Citizen.Wait(10)
+        Citizen.Wait(0)
+        local playerCoords = GetEntityCoords(PlayerPedId())
+        for coords, endTime in pairs(paidMeters) do
+            if GetDistanceBetweenCoords(playerCoords, coords.x, coords.y, coords.z, true) < 10.0 then
+                if GetGameTimer() < endTime then
+                    Draw3DText(coords.x, coords.y, coords.z + 1.0, 'Paid', { r = 0, g = 255, b = 0 })
+                else
+                    paidMeters[coords] = nil
+                end
+            end
+        end
     end
 end)
 
@@ -23,13 +34,7 @@ RegisterNetEvent('parking:payed')
 AddEventHandler('parking:payed', function(modelCoords)
     if modelCoords and type(modelCoords) == "table" and modelCoords.coords and modelCoords.coords.z then
         local coords = modelCoords.coords
-        Citizen.CreateThread(function()
-            local endTime = GetGameTimer() + displaytime
-            while GetGameTimer() < endTime do
-                Draw3DText(coords.x, coords.y, coords.z + 1.0, 'Paid', { r = 0, g = 255, b = 0 })
-                Citizen.Wait(0)
-            end
-        end)
+        paidMeters[coords] = GetGameTimer() + displaytime
     end
 end)
 
