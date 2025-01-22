@@ -1,5 +1,5 @@
 local model = 'prop_parknmeter_02'
-local displaytime = 5000 -- 5 seconds
+local displaytime = 900000 -- 15 mins
 
 Citizen.CreateThread(function()
     exports["qb-target"]:AddTargetModel(model, { 
